@@ -7,7 +7,7 @@ int main()
 {
 	DESAlgorithm *des = new DESAlgorithm();
 
-	string text = "ABCD1234";
+	string text = "azAZ09./";
 	text = des->stringToBin(text);
 
 	string encryptedText = des->DES(text);
