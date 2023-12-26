@@ -28,10 +28,11 @@ void sequentialDES(vector<string> lines, int size)
 
 void parallelDES(vector<string> lines, int size, int nThreads)
 {
+	omp_set_num_threads(nThreads);
+
 #pragma omp parallel
 	{
 		DESAlgorithm *des = new DESAlgorithm();
-		omp_set_num_threads(nThreads);
 
 #pragma omp for
 		for (int j = 0; j < size; j++)
