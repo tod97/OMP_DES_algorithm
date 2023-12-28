@@ -54,6 +54,7 @@ int main()
 	vector<string> lines(nWords);
 	for (int j = 0; j < nWords; ++j)
 		getline(file, lines[j]);
+	file.close();
 
 	// SEQUENTIAL
 	auto start = system_clock::now();
