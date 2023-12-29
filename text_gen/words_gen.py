@@ -5,14 +5,14 @@ import os
 def words_gen(N, length):
     characters = string.ascii_letters + string.digits + './'
 
-    words = []
-    for _ in range(N):
+    words = {}
+    while len(words) < N:
         new_word = ''.join(random.choice(characters) for _ in range(length))
-        words.append(new_word)
+        words[new_word] = 1
+    
+    return list(words.keys())
 
-    return words
-
-words = words_gen(10000, 8)
+words = words_gen(2000000, 8)
 
 filename = os.path.join(os.path.dirname(__file__), 'words.txt')
 
