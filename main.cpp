@@ -10,7 +10,7 @@
 using namespace std;
 using namespace chrono;
 
-#define nToCrack 1
+#define nToCrack 10
 
 void testCrack(vector<string> pwdList, vector<string> pwdToCrack);
 void sequentialCrack(vector<string> pwdList, vector<string> pwdToCrack);
@@ -50,13 +50,13 @@ void testCrack(vector<string> pwdList, vector<string> pwdToCrack)
 	cout << "Sequential: " << seqElapsed.count() << "ms" << endl;
 	cout << "-----------------------------------------" << endl;
 
-	vector<int> threadTests = {};
-#ifdef _OPENMP
-	for (int i = 0; pow(2, i) <= omp_get_max_threads(); i++)
-	{
-		threadTests.push_back(pow(2, i));
-	}
-#endif
+	vector<int> threadTests = {1, 2, 4, 8, 16, 32, 64};
+	/* #ifdef _OPENMP
+		for (int i = 0; pow(2, i) <= omp_get_max_threads(); i++)
+		{
+			threadTests.push_back(pow(2, i));
+		}
+	#endif */
 	vector<float> speedups = {};
 
 	for (int i = 0; i < threadTests.size(); i++)
@@ -97,7 +97,7 @@ void sequentialCrack(vector<string> pwdList, vector<string> pwdToCrack)
 
 			if (encrypted == pwdEncrypted)
 			{
-				// cout << "Password found: " << pwd << endl;
+				cout << "Password found: " << pwd << endl;
 				break;
 			}
 		}
@@ -118,7 +118,7 @@ void parallelCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThrea
 		volatile bool found = false;
 		int workloadThread = static_cast<int>(ceil((double)pwdList.size() / (double)nThreads));
 
-#pragma omp parallel shared(des, found)
+#pragma omp parallel shared(des, encrypted, found)
 		{
 #ifdef _OPENMP
 			int tid = omp_get_thread_num();
@@ -128,7 +128,7 @@ void parallelCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThrea
 
 				if (encrypted == pwdEncrypted)
 				{
-					// cout << "Password found: " << pwdList[i] << endl;
+					cout << "Password found: " << pwdList[i] << endl;
 					found = true;
 				}
 			}
