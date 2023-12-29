@@ -1,6 +1,7 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -9,54 +10,65 @@
 using namespace std;
 using namespace chrono;
 
-#define nWords 10000
-#define partialWords 5000
+#define nToCrack 1
 
-void testEncryptDecrypt(vector<string> lines);
-void sequentialDES(vector<string> lines, int size);
-void parallelDES(vector<string> lines, int size, int nThreads);
+void testCrack(vector<string> pwdList, vector<string> pwdToCrack);
+void sequentialCrack(vector<string> pwdList, vector<string> pwdToCrack);
+void parallelCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThreads);
 
 int main()
 {
+	string line;
 	ifstream file("text_gen/words.txt");
-	vector<string> lines(nWords);
-	for (int j = 0; j < nWords; ++j)
-		getline(file, lines[j]);
+	vector<string> pwdList = {};
+	while (getline(file, line))
+	{
+		pwdList.push_back(line);
+	}
 	file.close();
 
-	testEncryptDecrypt(lines);
+	vector<string> pwdToCrack = {};
+	while (pwdToCrack.size() < nToCrack)
+	{
+		auto newEl = pwdList[rand() % pwdList.size()];
+		if (find(pwdToCrack.begin(), pwdToCrack.end(), newEl) == pwdToCrack.end())
+			pwdToCrack.push_back(newEl);
+	}
+
+	testCrack(pwdList, pwdToCrack);
+	// testEncryptDecrypt(pwdList);
 }
 
-void testEncryptDecrypt(vector<string> lines)
+void testCrack(vector<string> pwdList, vector<string> pwdToCrack)
 {
+	cout << "--------- PWD TO CRACK SIZE = " << nToCrack << " ---------" << endl;
+
 	// SEQUENTIAL
 	auto start = system_clock::now();
-	sequentialDES(lines, partialWords);
+	sequentialCrack(pwdList, pwdToCrack);
 	auto end = system_clock::now();
 	auto seqElapsed = duration_cast<milliseconds>(end - start);
-	cout << "--------- SIZE = " << partialWords << " ---------" << endl;
-	cout << "seq DES: " << seqElapsed.count() << "ms" << endl;
-	cout << "------------------" << endl;
+	cout << "Sequential: " << seqElapsed.count() << "ms" << endl;
+	cout << "-----------------------------------------" << endl;
 
-	// PARALLEL
-	vector<int> nThreads = {};
+	vector<int> threadTests = {};
 #ifdef _OPENMP
 	for (int i = 0; pow(2, i) <= omp_get_max_threads(); i++)
 	{
-		nThreads.push_back(pow(2, i));
+		threadTests.push_back(pow(2, i));
 	}
 #endif
 	vector<float> speedups = {};
 
-	for (int i = 0; i < nThreads.size(); i++)
+	for (int i = 0; i < threadTests.size(); i++)
 	{
 		start = system_clock::now();
-		parallelDES(lines, partialWords, nThreads[i]);
+		parallelCrack(pwdList, pwdToCrack, threadTests[i]);
 		end = system_clock::now();
 		auto elapsed = duration_cast<milliseconds>(end - start);
-		cout << "par DES (t=" << nThreads[i] << "): " << elapsed.count() << "ms" << endl;
+		cout << "Parallel [t=" << threadTests[i] << "]: " << elapsed.count() << "ms" << endl;
 		cout << "Speedup: " << (float)seqElapsed.count() / elapsed.count() << "x" << endl;
-		cout << "------------------" << endl;
+		cout << "-----------------------------------------" << endl;
 		speedups.push_back((float)seqElapsed.count() / elapsed.count());
 	}
 
@@ -72,47 +84,48 @@ void testEncryptDecrypt(vector<string> lines)
 	}
 }
 
-void sequentialDES(vector<string> lines, int size)
+void sequentialCrack(vector<string> pwdList, vector<string> pwdToCrack)
 {
 	DESAlgorithm des;
 
-	for (int j = 0; j < size; j++)
+	for (string &encrypted : pwdToCrack)
 	{
-		string text = lines[j];
-
-		string encryptedText = des.DES(des.stringToBin(text));
-		des.reverseKeys();
-		string decryptedText = des.DES(encryptedText);
-
-		string result = des.binToString(decryptedText);
-		if (result != text)
+		// cout << "Password to crack: " << encrypted << endl;
+		encrypted = des.DES(des.stringToBin(encrypted));
+		for (string &pwd : pwdList)
 		{
-			cout << "Error: " << result << " != " << text << endl;
+			string pwdEncrypted = des.DES(des.stringToBin(pwd));
+
+			if (encrypted == pwdEncrypted)
+			{
+				// cout << "Password found: " << pwd << endl;
+				break;
+			}
 		}
 	}
 }
 
-void parallelDES(vector<string> lines, int size, int nThreads)
+void parallelCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThreads)
 {
 #ifdef _OPENMP
 	omp_set_num_threads(nThreads);
 #endif
-
 	DESAlgorithm des;
 
-#pragma omp parallel for shared(lines, size) private(des)
-	for (int j = 0; j < size; j++)
+#pragma omp parallel for
+	for (string &encrypted : pwdToCrack)
 	{
-		string text = lines[j];
-
-		string encryptedText = des.DES(des.stringToBin(text));
-		des.reverseKeys();
-		string decryptedText = des.DES(encryptedText);
-
-		string result = des.binToString(decryptedText);
-		if (result != text)
+		// cout << "Password to crack: " << encrypted << endl;
+		encrypted = des.DES(des.stringToBin(encrypted));
+		for (string &pwd : pwdList)
 		{
-			cout << "Error: " << result << " != " << text << endl;
+			string pwdEncrypted = des.DES(des.stringToBin(pwd));
+
+			if (encrypted == pwdEncrypted)
+			{
+				// cout << "Password found: " << pwd << endl;
+				break;
+			}
 		}
 	}
 }
