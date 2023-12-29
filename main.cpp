@@ -1,4 +1,6 @@
-#include <omp.h> // for OpenMP library functions
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -28,7 +30,9 @@ void sequentialDES(vector<string> lines, int size)
 
 void parallelDES(vector<string> lines, int size, int nThreads)
 {
+#ifdef _OPENMP
 	omp_set_num_threads(nThreads);
+#endif
 
 #pragma omp parallel
 	{
@@ -67,10 +71,12 @@ int main()
 
 	// PARALLEL
 	vector<int> nThreads = {};
+#ifdef _OPENMP
 	for (int i = 0; pow(2, i) <= omp_get_max_threads(); i++)
 	{
 		nThreads.push_back(pow(2, i));
 	}
+#endif
 	vector<float> speedups = {};
 
 	for (int i = 0; i < nThreads.size(); i++)
@@ -85,9 +91,10 @@ int main()
 		speedups.push_back((float)seqElapsed.count() / elapsed.count());
 	}
 
-	cout << "Speedups: [";
 	for (int i = 0; i < speedups.size(); i++)
 	{
+		if (i == 0)
+			cout << "Speedups: [";
 		cout << speedups[i];
 		if (i != speedups.size() - 1)
 			cout << ", ";
