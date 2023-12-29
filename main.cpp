@@ -14,17 +14,21 @@ using namespace chrono;
 
 void sequentialDES(vector<string> lines, int size)
 {
-	DESAlgorithm *des = new DESAlgorithm();
+	DESAlgorithm des;
 
 	for (int j = 0; j < size; j++)
 	{
 		string text = lines[j];
 
-		string encryptedText = des->DES(des->stringToBin(text));
-		des->reverseKeys();
-		string decryptedText = des->DES(encryptedText);
+		string encryptedText = des.DES(des.stringToBin(text));
+		des.reverseKeys();
+		string decryptedText = des.DES(encryptedText);
 
-		string result = des->binToString(decryptedText);
+		string result = des.binToString(decryptedText);
+		if (result != text)
+		{
+			cout << "Error: " << result << " != " << text << endl;
+		}
 	}
 }
 
@@ -34,17 +38,22 @@ void parallelDES(vector<string> lines, int size, int nThreads)
 	omp_set_num_threads(nThreads);
 #endif
 
-#pragma omp parallel for
+	DESAlgorithm des;
+
+#pragma omp parallel for shared(lines, size) private(des)
 	for (int j = 0; j < size; j++)
 	{
-		DESAlgorithm *des = new DESAlgorithm();
 		string text = lines[j];
 
-		string encryptedText = des->DES(des->stringToBin(text));
-		des->reverseKeys();
-		string decryptedText = des->DES(encryptedText);
+		string encryptedText = des.DES(des.stringToBin(text));
+		des.reverseKeys();
+		string decryptedText = des.DES(encryptedText);
 
-		string result = des->binToString(decryptedText);
+		string result = des.binToString(decryptedText);
+		if (result != text)
+		{
+			cout << "Error: " << result << " != " << text << endl;
+		}
 	}
 }
 
