@@ -66,7 +66,11 @@ int main()
 	cout << "------------------" << endl;
 
 	// PARALLEL
-	vector<int> nThreads = {1, 2, 4, 8, 16, 32, 64, 128};
+	vector<int> nThreads = {};
+	for (int i = 0; pow(2, i) <= omp_get_max_threads(); i++)
+	{
+		nThreads.push_back(pow(2, i));
+	}
 	vector<float> speedups = {};
 
 	for (int i = 0; i < nThreads.size(); i++)
