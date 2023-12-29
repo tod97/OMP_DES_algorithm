@@ -60,13 +60,34 @@ int main()
 	auto start = system_clock::now();
 	sequentialDES(lines, partialWords);
 	auto end = system_clock::now();
-	auto elapsed = duration_cast<milliseconds>(end - start);
-	cout << "seq DES (n=" << partialWords << "): " << elapsed.count() << "ms" << endl;
+	auto seqElapsed = duration_cast<milliseconds>(end - start);
+	cout << "--------- SIZE = " << partialWords << " ---------" << endl;
+	cout << "seq DES: " << seqElapsed.count() << "ms" << endl;
+	cout << "------------------" << endl;
 
 	// PARALLEL
-	start = system_clock::now();
-	parallelDES(lines, partialWords, 4);
-	end = system_clock::now();
-	elapsed = duration_cast<milliseconds>(end - start);
-	cout << "par DES (n=" << partialWords << "): " << elapsed.count() << "ms" << endl;
+	vector<int> nThreads = {1, 2, 4, 8, 16, 32, 64, 128};
+	vector<float> speedups = {};
+
+	for (int i = 0; i < nThreads.size(); i++)
+	{
+		start = system_clock::now();
+		parallelDES(lines, partialWords, nThreads[i]);
+		end = system_clock::now();
+		auto elapsed = duration_cast<milliseconds>(end - start);
+		cout << "par DES (t=" << nThreads[i] << "): " << elapsed.count() << "ms" << endl;
+		cout << "Speedup: " << (float)seqElapsed.count() / elapsed.count() << "x" << endl;
+		cout << "------------------" << endl;
+		speedups.push_back((float)seqElapsed.count() / elapsed.count());
+	}
+
+	cout << "Speedups: [";
+	for (int i = 0; i < speedups.size(); i++)
+	{
+		cout << speedups[i];
+		if (i != speedups.size() - 1)
+			cout << ", ";
+		else
+			cout << "]" << endl;
+	}
 }
