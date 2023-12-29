@@ -34,21 +34,18 @@ void parallelDES(vector<string> lines, int size, int nThreads)
 	omp_set_num_threads(nThreads);
 #endif
 
-#pragma omp parallel
+	DESAlgorithm *des = new DESAlgorithm();
+
+#pragma omp parallel for
+	for (int j = 0; j < size; j++)
 	{
-		DESAlgorithm *des = new DESAlgorithm();
+		string text = lines[j];
 
-#pragma omp for
-		for (int j = 0; j < size; j++)
-		{
-			string text = lines[j];
+		string encryptedText = des->DES(des->stringToBin(text));
+		des->reverseKeys();
+		string decryptedText = des->DES(encryptedText);
 
-			string encryptedText = des->DES(des->stringToBin(text));
-			des->reverseKeys();
-			string decryptedText = des->DES(encryptedText);
-
-			string result = des->binToString(decryptedText);
-		}
+		string result = des->binToString(decryptedText);
 	}
 }
 
