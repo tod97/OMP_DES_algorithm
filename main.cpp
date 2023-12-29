@@ -36,7 +36,6 @@ int main()
 	}
 
 	testCrack(pwdList, pwdToCrack);
-	// testEncryptDecrypt(pwdList);
 }
 
 void testCrack(vector<string> pwdList, vector<string> pwdToCrack)
