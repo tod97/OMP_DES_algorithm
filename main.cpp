@@ -10,8 +10,8 @@
 using namespace std;
 using namespace chrono;
 
-#define nToCrack 10
-#define nTests 1
+#define nToCrack 5
+#define nTests 10
 
 void testCrack(vector<string> pwdList, vector<string> pwdToCrack);
 void sequentialCrack(vector<string> pwdList, vector<string> pwdToCrack);
@@ -214,6 +214,36 @@ void sequentialSmartCrack(vector<string> pwdList, vector<string> pwdToCrack)
 
 void parallelSmartCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThreads)
 {
+#ifdef _OPENMP
+	omp_set_num_threads(nThreads);
+#endif
+	DESAlgorithm des;
+	volatile int pwdFound = 0;
+	vector<string> pwdToCrackEncrypted = {};
+
+	for (string &encrypted : pwdToCrack)
+	{
+		pwdToCrackEncrypted.push_back(des.DES(des.stringToBin(encrypted)));
+	}
+
+	int splitDimension = static_cast<int>(ceil((double)pwdList.size() / (double)nThreads));
+
+#pragma omp parallel shared(des, pwdToCrackEncrypted, pwdFound)
+	{
+#ifdef _OPENMP
+		int tid = omp_get_thread_num();
+		for (int i = tid * splitDimension; i < (tid + 1) * splitDimension && pwdFound != pwdToCrack.size(); i++)
+		{
+			string pwdEncrypted = des.DES(des.stringToBin(pwdList[i]));
+
+			if (find(pwdToCrackEncrypted.begin(), pwdToCrackEncrypted.end(), pwdEncrypted) != pwdToCrackEncrypted.end())
+			{
+				cout << "Password found: " << pwdList[i] << endl;
+				pwdFound++;
+			}
+		}
+#endif
+	}
 }
 
 void printVector(vector<float> v, string name)
