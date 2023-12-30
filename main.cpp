@@ -21,7 +21,7 @@ void printVector(vector<float> v, string name);
 int main()
 {
 	string line;
-	ifstream file("text_gen/words.txt");
+	ifstream file("words.txt");
 	vector<string> pwdList = {};
 	while (getline(file, line))
 	{
