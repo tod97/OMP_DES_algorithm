@@ -116,13 +116,13 @@ void parallelCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThrea
 		// cout << "Password to crack: " << encrypted << endl;
 		encrypted = des.DES(des.stringToBin(encrypted));
 		volatile bool found = false;
-		int workloadThread = static_cast<int>(ceil((double)pwdList.size() / (double)nThreads));
+		int splitDimension = static_cast<int>(ceil((double)pwdList.size() / (double)nThreads));
 
 #pragma omp parallel shared(des, encrypted, found)
 		{
 #ifdef _OPENMP
 			int tid = omp_get_thread_num();
-			for (int i = tid * workloadThread; i < (tid + 1) * workloadThread && !found; i++)
+			for (int i = tid * splitDimension; i < (tid + 1) * splitDimension && !found; i++)
 			{
 				string pwdEncrypted = des.DES(des.stringToBin(pwdList[i]));
 
