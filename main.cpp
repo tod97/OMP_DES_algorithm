@@ -10,7 +10,8 @@
 using namespace std;
 using namespace chrono;
 
-#define nToCrack 10
+#define nToCrack 1
+#define nTests 1
 
 void testCrack(vector<string> pwdList, vector<string> pwdToCrack);
 void sequentialCrack(vector<string> pwdList, vector<string> pwdToCrack);
@@ -28,7 +29,7 @@ int main()
 	file.close();
 
 	vector<string> pwdToCrack = {};
-	while (pwdToCrack.size() < nToCrack)
+	while (pwdToCrack.size() < nToCrack * nTests)
 	{
 		auto newEl = pwdList[rand() % pwdList.size()];
 		if (find(pwdToCrack.begin(), pwdToCrack.end(), newEl) == pwdToCrack.end())
@@ -44,15 +45,18 @@ void testCrack(vector<string> pwdList, vector<string> pwdToCrack)
 
 	// SEQUENTIAL
 	auto start = system_clock::now();
-	sequentialCrack(pwdList, pwdToCrack);
+	for (int i = 0; i < nTests; i++)
+	{
+		sequentialCrack(pwdList, vector<string>(pwdToCrack.begin() + i * nToCrack, pwdToCrack.begin() + (i + 1) * nToCrack));
+	}
 	auto end = system_clock::now();
-	auto seqElapsed = duration_cast<milliseconds>(end - start);
+	auto seqElapsed = duration_cast<milliseconds>(end - start) / nTests;
 	cout << "Sequential: " << seqElapsed.count() << "ms" << endl;
 	cout << "-----------------------------------------" << endl;
 
-	vector<int> threadTests = {1, 2, 4, 8, 16, 32, 64};
+	vector<int> threadTests = {2, 3, 4, 6, 8, 16, 32, 64};
 	/* #ifdef _OPENMP
-		for (int i = 0; pow(2, i) <= omp_get_max_threads(); i++)
+		for (int i = 1; pow(2, i) <= omp_get_max_threads(); i++)
 		{
 			threadTests.push_back(pow(2, i));
 		}
@@ -62,9 +66,12 @@ void testCrack(vector<string> pwdList, vector<string> pwdToCrack)
 	for (int i = 0; i < threadTests.size(); i++)
 	{
 		start = system_clock::now();
-		parallelCrack(pwdList, pwdToCrack, threadTests[i]);
+		for (int j = 0; j < nTests; j++)
+		{
+			parallelCrack(pwdList, vector<string>(pwdToCrack.begin() + j * nToCrack, pwdToCrack.begin() + (j + 1) * nToCrack), threadTests[i]);
+		}
 		end = system_clock::now();
-		auto elapsed = duration_cast<milliseconds>(end - start);
+		auto elapsed = duration_cast<milliseconds>(end - start) / nTests;
 		cout << "Parallel [t=" << threadTests[i] << "]: " << elapsed.count() << "ms" << endl;
 		cout << "Speedup: " << (float)seqElapsed.count() / elapsed.count() << "x" << endl;
 		cout << "-----------------------------------------" << endl;
