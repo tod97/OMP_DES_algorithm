@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
 
-x_axes = [1, 5, 10]
+x_axes = [1, 5, 10, 20]
 times = {
-    '1 thread': [7304, 43162, 78944],
-    '8 threads': [1387, 10483, 22712]
+    '1 thread': [7304, 43162, 78944, 166808],
+    '8 threads': [1387, 10483, 22712, 48692]
 }
 speedups = {
-    '8 threads': [5.26604, 4.11733, 3.47587]
+    '8 threads': [5.26604, 4.11733, 3.47587, 3.42578]
 }
 colors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple']
 
