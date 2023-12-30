@@ -16,6 +16,7 @@ using namespace chrono;
 void testCrack(vector<string> pwdList, vector<string> pwdToCrack);
 void sequentialCrack(vector<string> pwdList, vector<string> pwdToCrack);
 void parallelCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThreads);
+void printVector(vector<float> v, string name);
 
 int main()
 {
@@ -61,6 +62,7 @@ void testCrack(vector<string> pwdList, vector<string> pwdToCrack)
 			threadTests.push_back(pow(2, i));
 		}
 	#endif */
+	vector<float> times = {};
 	vector<float> speedups = {};
 
 	for (int i = 0; i < threadTests.size(); i++)
@@ -75,19 +77,12 @@ void testCrack(vector<string> pwdList, vector<string> pwdToCrack)
 		cout << "Parallel [t=" << threadTests[i] << "]: " << elapsed.count() << "ms" << endl;
 		cout << "Speedup: " << (float)seqElapsed.count() / elapsed.count() << "x" << endl;
 		cout << "-----------------------------------------" << endl;
+		times.push_back(elapsed.count());
 		speedups.push_back((float)seqElapsed.count() / elapsed.count());
 	}
 
-	for (int i = 0; i < speedups.size(); i++)
-	{
-		if (i == 0)
-			cout << "Speedups: [";
-		cout << speedups[i];
-		if (i != speedups.size() - 1)
-			cout << ", ";
-		else
-			cout << "]" << endl;
-	}
+	printVector(times, "Times");
+	printVector(speedups, "Speedups");
 }
 
 void sequentialCrack(vector<string> pwdList, vector<string> pwdToCrack)
@@ -141,5 +136,19 @@ void parallelCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThrea
 			}
 #endif
 		}
+	}
+}
+
+void printVector(vector<float> v, string name)
+{
+	for (int i = 0; i < v.size(); i++)
+	{
+		if (i == 0)
+			cout << name << ": [";
+		cout << v[i];
+		if (i != v.size() - 1)
+			cout << ", ";
+		else
+			cout << "]" << endl;
 	}
 }
