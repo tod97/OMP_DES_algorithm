@@ -42,6 +42,7 @@ int main()
 
 void testCrack(vector<string> pwdList, vector<string> pwdToCrack)
 {
+	vector<float> times = {};
 	cout << "--------- PWD TO CRACK SIZE = " << nToCrack << " ---------" << endl;
 
 	// SEQUENTIAL
@@ -54,15 +55,15 @@ void testCrack(vector<string> pwdList, vector<string> pwdToCrack)
 	auto seqElapsed = duration_cast<milliseconds>(end - start) / nTests;
 	cout << "Sequential: " << seqElapsed.count() << "ms" << endl;
 	cout << "-----------------------------------------" << endl;
+	times.push_back(seqElapsed.count());
 
-	vector<int> threadTests = {2, 3, 4, 6, 8, 16, 32, 64};
+	vector<int> threadTests = {2, 3, 4, 6, 8, 16, 32};
 	/* #ifdef _OPENMP
 		for (int i = 1; pow(2, i) <= omp_get_max_threads(); i++)
 		{
 			threadTests.push_back(pow(2, i));
 		}
 	#endif */
-	vector<float> times = {};
 	vector<float> speedups = {};
 
 	for (int i = 0; i < threadTests.size(); i++)
