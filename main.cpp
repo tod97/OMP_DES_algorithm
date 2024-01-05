@@ -118,7 +118,6 @@ void parallelCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThrea
 	{
 		// cout << "Password to crack: " << encrypted << endl;
 		encrypted = des.DES(des.stringToBin(encrypted));
-		volatile bool found = false;
 		vector<int> chunks;
 		chunks.push_back(0);
 		for (int i = 1; i < nThreads; ++i)
@@ -128,18 +127,19 @@ void parallelCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThrea
 		chunks.push_back(pwdList.size());
 
 #ifdef _OPENMP
-#pragma omp parallel shared(des, encrypted, chunks, found)
+#pragma omp parallel shared(des, encrypted, chunks)
 		{
 			int tid = omp_get_thread_num();
-			for (int i = chunks[tid]; i < chunks[tid + 1] && !found; i++)
+			for (int i = chunks[tid]; i < chunks[tid + 1]; i++)
 			{
 				string pwdEncrypted = des.DES(des.stringToBin(pwdList[i]));
 
 				if (encrypted == pwdEncrypted)
 				{
 					cout << "Password found: " << pwdList[i] << endl;
-					found = true;
+#pragma omp cancel parallel
 				}
+#pragma omp cancellation point parallel
 			}
 		}
 #endif
