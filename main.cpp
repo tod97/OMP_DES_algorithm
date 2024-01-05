@@ -29,6 +29,10 @@ int main()
 	}
 	file.close();
 
+#ifdef _OPENMP
+	cout << "Cancellation " << (omp_get_cancellation() == 1 ? "enabled" : "disabled. Set OMP_CANCELLATION=TRUE as env variable") << endl;
+#endif
+
 	vector<string> pwdToCrack = {};
 	while (pwdToCrack.size() < nToCrack * nTests)
 	{
@@ -57,13 +61,7 @@ void testCrack(vector<string> pwdList, vector<string> pwdToCrack)
 	cout << "-----------------------------------------" << endl;
 	times.push_back(seqElapsed.count());
 
-	vector<int> threadTests = {2, 3, 4, 6, 8, 16, 32};
-	/* #ifdef _OPENMP
-		for (int i = 1; pow(2, i) <= omp_get_max_threads(); i++)
-		{
-			threadTests.push_back(pow(2, i));
-		}
-	#endif */
+	vector<int> threadTests = {2, 4, 6, 8, 16, 32, 64};
 	vector<float> speedups = {};
 
 	for (int i = 0; i < threadTests.size(); i++)
@@ -111,7 +109,6 @@ void parallelCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThrea
 {
 #ifdef _OPENMP
 	omp_set_num_threads(nThreads);
-	cout << "Cancellation " << (omp_get_cancellation() == 1 ? "enabled" : "disabled. Set OMP_CANCELLATION=TRUE as env variable") << endl;
 #endif
 	DESAlgorithm des;
 
