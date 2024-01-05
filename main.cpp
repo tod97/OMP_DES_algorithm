@@ -121,9 +121,9 @@ void parallelCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThrea
 		volatile bool found = false;
 		int splitDimension = static_cast<int>(ceil((double)pwdList.size() / (double)nThreads));
 
-#pragma omp parallel shared(des, encrypted, found)
-		{
 #ifdef _OPENMP
+#pragma omp parallel shared(des, encrypted)
+		{
 			int tid = omp_get_thread_num();
 			for (int i = tid * splitDimension; i < (tid + 1) * splitDimension && !found; i++)
 			{
@@ -135,8 +135,8 @@ void parallelCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThrea
 					found = true;
 				}
 			}
-#endif
 		}
+#endif
 	}
 }
 
