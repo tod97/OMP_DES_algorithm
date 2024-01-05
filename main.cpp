@@ -111,6 +111,7 @@ void parallelCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThrea
 {
 #ifdef _OPENMP
 	omp_set_num_threads(nThreads);
+	cout << "Cancellation " << (omp_get_cancellation() == 1 ? "enabled" : "disabled. Set OMP_CANCELLATION=TRUE as env variable") << endl;
 #endif
 	DESAlgorithm des;
 
