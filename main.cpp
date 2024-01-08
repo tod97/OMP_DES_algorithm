@@ -118,7 +118,7 @@ void parallelCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThrea
 		encrypted = des.DES(des.stringToBin(encrypted));
 		vector<int> chunks;
 		chunks.push_back(0);
-		for (int i = 1; i < nThreads; ++i)
+		for (int i = 1; i < nThreads; i++)
 		{
 			chunks.push_back(static_cast<int>(pwdList.size() / nThreads) * i);
 		}
