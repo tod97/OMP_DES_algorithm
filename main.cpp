@@ -111,6 +111,38 @@ void parallelCrack(vector<string> pwdList, vector<string> pwdToCrack, int nThrea
 	omp_set_num_threads(nThreads);
 #endif
 	DESAlgorithm des;
+
+	for (string &encrypted : pwdToCrack)
+	{
+		// cout << "Password to crack: " << encrypted << endl;
+		encrypted = des.DES(des.stringToBin(encrypted));
+
+#ifdef _OPENMP
+#pragma omp parallel shared(des, encrypted)
+		{
+#pragma omp for schedule(static)
+			for (string &pwd : pwdList)
+			{
+				string pwdEncrypted = des.DES(des.stringToBin(pwd));
+
+				if (encrypted == pwdEncrypted)
+				{
+					cout << "Password found: " << pwd << endl;
+#pragma omp cancel for
+				}
+#pragma omp cancellation point for
+			}
+		}
+#endif
+	}
+}
+
+void parallelCrackChunks(vector<string> pwdList, vector<string> pwdToCrack, int nThreads)
+{
+#ifdef _OPENMP
+	omp_set_num_threads(nThreads);
+#endif
+	DESAlgorithm des;
 	vector<int> chunks;
 	chunks.push_back(0);
 	for (int i = 1; i < nThreads; i++)
